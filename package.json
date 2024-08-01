@@ -1,6 +1,6 @@
 {
   "name": "historia",
-  "description": "Historia is the greatest thing ever",
+  "description": "Manage current tabs (experimental)",
   "private": true,
   "version": "0.1.0",
   "type": "module",

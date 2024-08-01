@@ -1,9 +1,9 @@
-import { defineConfig } from 'wxt';
+import { defineConfig } from "wxt";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
-  modules: ['@wxt-dev/module-solid'],
+  modules: ["@wxt-dev/module-solid"],
   manifest: {
-    permissions: ['tabs']
-  }
+    permissions: ["tabs"],
+  },
 });
