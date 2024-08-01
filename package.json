@@ -21,6 +21,7 @@
   "devDependencies": {
     "@types/lodash.groupby": "^4.6.9",
     "@wxt-dev/module-solid": "^1.1.1",
+    "prettier": "^3.3.3",
     "typescript": "^5.5.4",
     "wxt": "^0.19.1"
   }
