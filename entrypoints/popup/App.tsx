@@ -120,7 +120,7 @@ const GroupedTabs = (props: { grouped: [string, Tabs.Tab[]][], refetch: () => vo
       <div class="group">
         <div class="row">
           <div>{tabs.length}</div>
-          <h2>{key}</h2>
+          <h2>{key} and some very very very long txt here to test it all the way to infinity</h2>
           <button onClick={() => toggleExpanded(key)}>{expanded()[key] ? 'Collapse' : 'Expand'}</button>
         </div>
         <Show when={expanded()[key]}>
