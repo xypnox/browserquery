@@ -12,11 +12,57 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+
+
+  --primary-color: #ff5370;
+  --primary-contrast: #000000;
+  --secondary-color: #5d86ff;
+  --colors-purple: #ff5370;
+  --background: #0f111a;
+  --surface: #1e2139a0;
+  --surface2: rgba(35, 38, 61, 0.72);
+  --tooltip: rgb(35, 38, 53);
+  --border-style: solid;
+  --border-color: rgb(48, 52, 71);
+  --text: #919DCF;
+  --heading: #aab6e8;
+  --fadeText: rgba(108, 117, 158, 0.94);
+  --shadow-card: 0 1rem 2rem 0 rgba(0, 0, 0, 0.6);
+  --shadow-medium: 0 0.5rem 1rem 0 rgba(0, 0, 0, 0.3);
+  --shadow-small: 0 0.1rem 0.2rem 0 rgba(0, 0, 0, 0.3);
+  --shadow-cardDrop: 0 1rem 2rem rgba(0, 0, 0, 0.6);
+  --card-border: 2px dashed var(--border-color);
+  --card-background: linear-gradient(-45deg, var(--background), var(--background), var(--surface));
+  --card-backgroundHover: linear-gradient(-45deg, var(--background), var(--background), var(--surface));
+  --card-backgroundPosition: 90% 0;
+  --card-backgroundSize: 200%;
+  --card-borderHover: 2px solid var(--border-color);
+  --card-backgroundPositionHover: 10% 20%;
+  --bold: #ff5370;
+  --italic: #ff5370;
+  --strikethrough: #ff5370;
+  --gradient-color-1: var(--primary-color);
+  --gradient-color-2: var(--colors-purple);
+  --animated-gradient: linear-gradient(-60deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-1), var(--secondary-color), var(--gradient-color-1), var(--gradient-color-2));
+  --layout-content-wide: 1200px;
+  --layout-content-main: 800px;
+  --layout-nav-height: 3rem;
+  --border-radius: 0.2rem;
+  --font-family: Jost;
+  --font-size-sm: clamp(0.8rem, 0.21vw + 0.75rem, 0.94rem);
+  --font-size-base: clamp(1rem, 0.38vw + 0.9rem, 1.25rem);
+  --font-size-md: clamp(1.25rem, 0.64vw + 1.09rem, 1.67rem);
+  --font-size-lg: clamp(1.56rem, 1.01vw + 1.31rem, 2.22rem);
+  --font-size-xl: clamp(1.95rem, 1.55vw + 1.57rem, 2.96rem);
+  --font-size-xxl: clamp(2.44rem, 2.32vw + 1.86rem, 3.95rem);
+  --font-size-xxxl: clamp(3.05rem, 3.4vw + 2.2rem, 5.26rem);
 }
 
 body {
   width: 80ch;
   margin: 0;
+  font-size: var(--font-size-base);
 }
 
 a {
