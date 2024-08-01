@@ -1,1 +1,1 @@
-export const sendMessage = browser.runtime.sendMessage
+export const sendMessage = browser.runtime.sendMessage;

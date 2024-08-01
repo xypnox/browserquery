@@ -1,4 +1,4 @@
-.flow>*+* {
+.flow > * + * {
   margin-top: 1rem;
 }
 
@@ -74,7 +74,7 @@ h1.title {
   flex-wrap: nowrap;
 }
 
-.group>.row>div:first-child {
+.group > .row > div:first-child {
   color: var(--secondary-color);
 }
 
