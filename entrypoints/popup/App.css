@@ -61,12 +61,30 @@ h1.title {
 }
 
 .group {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
   padding: 0.25em;
   border: 1px solid var(--border-color);
 }
 
+.group .row {
+  width: 100%;
+  gap: 1em;
+}
+
+.group>.row>div:first-child {
+  color: var(--secondary-color);
+}
+
 .group h2 {
+  max-width: 100%;
+  flex-grow: 1;
   font-size: var(--font-size-md);
   color: var(--primary-color);
   margin: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

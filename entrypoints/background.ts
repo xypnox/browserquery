@@ -3,7 +3,7 @@ import { Tabs } from 'wxt/browser';
 
 const getAllTabs = async () => {
   const tabs = await browser.tabs.query({});
-  return tabs;
+  return tabs.filter((tab) => tab.url && tab.url.startsWith('http'));
 }
 
 type BackgroundResponse = ResponseType<Tabs.Tab[]> | ResponseType<boolean>;

@@ -16,12 +16,13 @@ const tabsDataFecther = async () => {
   }
 }
 
-const groupByTypeArray = ['domain', 'window', 'active', 'time', 'audio', 'article', 'pinned'] as const;
+const groupByTypeArray = ['domain', 'window', 'active', 'time', 'audio', 'article', 'pinned', 'duplicate'] as const;
 type GroupByType = typeof groupByTypeArray[number];
 
 interface GroupByData {
   type: GroupByType;
   groupKey: (tab: Tabs.Tab) => string;
+  groupFilter?: (key: string, tabs: Tabs.Tab[]) => boolean;
 }
 
 const groupBy: GroupByData[] = [
@@ -74,7 +75,14 @@ const groupBy: GroupByData[] = [
       return 'Silent';
     }
   },
+  {
+    type: 'duplicate',
+    groupKey: (tab: Tabs.Tab) => tab.url ?? 'No URL',
+    // Which groups to filter out
+    groupFilter: (_key: string, tabs: Tabs.Tab[]) => tabs.length > 1
+  }
 ]
+
 
 const TabRow = (props: { tab: Tabs.Tab, refetch: () => void }) => (
   <div class="tabrow">
@@ -93,6 +101,40 @@ const TabRow = (props: { tab: Tabs.Tab, refetch: () => void }) => (
     <button onClick={() => sendMessage({ type: 'closeTabs', data: [props.tab.id] }).finally(props.refetch)}>X</button>
   </div>)
 
+const GroupedTabs = (props: { grouped: [string, Tabs.Tab[]][], refetch: () => void, expanded?: boolean }) => {
+  const [expanded, setExpanded] = createSignal<Record<string, boolean>>(props.grouped.reduce((acc, [key]) => {
+    acc[key] = false;
+    return acc;
+  }, {} as Record<string, boolean>))
+
+  const toggleExpanded = (key: string) => {
+    const expandedValue = { ...expanded() };
+    expandedValue[key] = !expandedValue[key];
+    setExpanded((exp) => ({ ...exp, [key]: !exp[key] }));
+  }
+
+  // console.log('Expanded:', expanded());
+
+  return <For each={props.grouped.sort(([_keyA, tabsA], [_keyB, tabsB]) => tabsB.length - tabsA.length)}>
+    {([key, tabs]) => (
+      <div class="group">
+        <div class="row">
+          <div>{tabs.length}</div>
+          <h2>{key}</h2>
+          <button onClick={() => toggleExpanded(key)}>{expanded()[key] ? 'Collapse' : 'Expand'}</button>
+        </div>
+        <Show when={expanded()[key]}>
+          <For each={tabs}>
+            {(tab) => (
+              <TabRow tab={tab} refetch={props.refetch} />
+            )}
+          </For>
+        </Show>
+      </div>
+    )}
+  </For>
+}
+
 function App() {
   // const [tabsData, setTabsData] = createSignal<Tabs.Tab[]>([]);
   const [tabsData, { refetch }] = createResource(async () => tabsDataFecther())
@@ -101,10 +143,14 @@ function App() {
 
   const [groupByIndex, setGroupByIndex] = createSignal<GroupByType | undefined>(undefined);
 
-  const groupedTabs = (tabs: Tabs.Tab[]) => {
+  const groupedTabs = () => {
+
     const groupByData = groupBy.find((group) => group.type === groupByIndex());
-    if (!groupByData) return {} as Record<string, Tabs.Tab[]>;
-    return groupby(tabs, groupByData.groupKey);
+    if (!groupByData) return [];
+    const gtabs = groupby(filtered(), groupByData.groupKey);
+    const filteredgTabs = groupByData.groupFilter ? Object.entries(gtabs).filter(([key, tabs]) => groupByData.groupFilter!(key, tabs)) : Object.entries(gtabs)
+    return filteredgTabs
+      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
   }
 
   const filtered = () => {
@@ -115,8 +161,6 @@ function App() {
       || tab.url?.toLowerCase().includes(filter().toLowerCase())
     );
   }
-
-  const grouped = () => Object.entries(groupedTabs(filtered())).sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
 
   const closeFiltered = () => {
     const filteredTabs = filtered();
@@ -159,18 +203,7 @@ function App() {
             </For>
           </Show>
           <Show when={groupByIndex()}>
-            <For each={grouped()}>
-              {([key, tabs]) => (
-                <div class="group">
-                  <h2>{key}</h2>
-                  <For each={tabs}>
-                    {(tab) => (
-                      <TabRow tab={tab} refetch={refetch} />
-                    )}
-                  </For>
-                </div>
-              )}
-            </For>
+            <GroupedTabs grouped={groupedTabs()} refetch={refetch} />
           </Show>
         </div>
       </div>
