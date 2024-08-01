@@ -1,6 +1,6 @@
 {
-  "name": "historia",
-  "description": "Manage current tabs (experimental)",
+  "name": "browserquery",
+  "description": "Query your current browser state (experimental)",
   "private": true,
   "version": "0.1.0",
   "type": "module",

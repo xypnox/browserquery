@@ -1,3 +1,21 @@
-# WXT + SolidJS
+# Browserquery
 
-This template should help get you started developing with SolidJS in WXT.
+Query your current browser state.
+
+## Build Steps
+
+```bash
+pnpm i
+pnpm build
+# OR
+pnpm build:firefox
+```
+
+## Dev
+
+
+```bash
+pnpm dev
+# OR
+pnpm dev:firefox
+```

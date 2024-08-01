@@ -1,9 +1,9 @@
 .flow > * + * {
-  margin-top: 1rem;
+  margin-top: 0.25rem;
 }
 
 .popup {
-  padding: 1rem;
+  padding: 1rem 0;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -13,13 +13,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 1rem;
 }
 
-.tabrow {
-  display: flex;
-  align-items: center;
+.popup header > .row {
   gap: 1rem;
-  width: 100%;
+}
+
+.sticky-controls {
+  position: sticky;
+  top: 0;
+  background-color: var(--background);
+  padding: 0.5rem 1rem;
 }
 
 .actionrow {
@@ -31,6 +36,22 @@
 
 .actionrow input {
   flex-grow: 1;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0 1rem;
+  max-width: 100%;
+}
+
+.tabrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .tabrow .favicon {
@@ -55,8 +76,13 @@
   white-space: nowrap;
 }
 
+.tabrow .close {
+  padding: 0.5em;
+  font-size: 0.75em;
+}
+
 h1.title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   margin: 0;
 }
 
@@ -66,6 +92,7 @@ h1.title {
   flex-direction: column;
   padding: 0.25em;
   border: 1px solid var(--border-color);
+  border-radius: calc(2 * var(--border-radius));
 }
 
 .group .row {

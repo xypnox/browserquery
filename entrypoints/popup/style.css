@@ -140,3 +140,25 @@ textarea:focus {
   outline: none;
   box-shadow: 0 0 0 2px var(--primary-color);
 }
+
+/* STyle the options */
+
+select {
+  appearance: none;
+}
+
+option {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+footer {
+  padding: 2em 1em 0;
+  color: var(--text);
+  text-align: end;
+  opacity: 0.5;
+}
+
+footer:hover {
+  opacity: 1;
+}

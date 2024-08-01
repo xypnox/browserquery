@@ -5,6 +5,9 @@ import { Tabs } from "wxt/browser";
 import { sendMessage } from "./messaging";
 import groupby from "lodash.groupby";
 
+const numStr = (num: number, singular: string, plural: string) =>
+  `${num} ${num === 1 ? singular : plural}`;
+
 const tabsDataFecther = async () => {
   try {
     const dataDirect: ResponseType<Tabs.Tab[]> = await sendMessage({
@@ -103,7 +106,7 @@ const ConfirmDelete = (props: {
   const [showConfirm, setShowConfirm] = createSignal(false);
 
   return (
-    <div>
+    <>
       <button
         onClick={() => {
           props.bypass ? props.onConfirm() : setShowConfirm(true);
@@ -115,7 +118,7 @@ const ConfirmDelete = (props: {
       </button>
 
       <Show when={showConfirm()}>
-        <div class="confirm-prompt">
+        <div class="confirm-prompt row">
           <button
             onClick={() => {
               props.onConfirm();
@@ -127,14 +130,13 @@ const ConfirmDelete = (props: {
           <button onClick={() => setShowConfirm(false)}>Cancel</button>
         </div>
       </Show>
-    </div>
+    </>
   );
 };
 
 const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
   <div class="tabrow">
     <div class="tabdetails">
-      <div>{props.tab.windowId}</div>
       <Show when={props.tab.favIconUrl}>
         <img src={props.tab.favIconUrl} alt="favicon" class="favicon" />
       </Show>
@@ -144,6 +146,7 @@ const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
       <p>{props.tab.title}</p>
     </div>
     <button
+      class="close"
       onClick={() =>
         sendMessage({ type: "closeTabs", data: [props.tab.id] }).finally(
           props.refetch,
@@ -156,6 +159,7 @@ const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
 );
 
 const GroupedTabs = (props: {
+  groupType: GroupByType;
   grouped: [string, Tabs.Tab[]][];
   refetch: () => void;
   bypassConfirmClose?: boolean;
@@ -194,7 +198,7 @@ const GroupedTabs = (props: {
             </button>
             <ConfirmDelete
               bypass={props.bypassConfirmClose}
-              label="x*"
+              label="xn"
               title="Close All"
               onConfirm={() =>
                 sendMessage({
@@ -203,17 +207,18 @@ const GroupedTabs = (props: {
                 }).finally(props.refetch)
               }
             />
-            <ConfirmDelete
-              bypass={props.bypassConfirmClose}
-              label="x-1"
-              title="Close All but one"
-              onConfirm={() =>
-                sendMessage({
-                  type: "closeTabs",
-                  data: tabs.map((tab) => tab.id).slice(1),
-                }).finally(props.refetch)
-              }
-            />
+            <Show when={props.groupType === "duplicate"}>
+              <ConfirmDelete
+                label="xn⁻¹"
+                title="Close All but one"
+                onConfirm={() =>
+                  sendMessage({
+                    type: "closeTabs",
+                    data: tabs.map((tab) => tab.id).slice(1),
+                  }).finally(props.refetch)
+                }
+              />
+            </Show>
           </div>
           <Show when={expanded()[key]}>
             <For each={tabs}>
@@ -231,12 +236,14 @@ function App() {
   const [tabsData, { refetch }] = createResource(async () => tabsDataFecther());
 
   const [filter, setFilter] = createSignal<string>("");
+  const [showSelect, setShowSelect] = createSignal(false);
 
   const [groupByIndex, setGroupByIndex] = createSignal<GroupByType | undefined>(
     undefined,
   );
 
   const groupedTabs = () => {
+    if (!groupByIndex()) return [];
     const groupByData = groupBy.find((group) => group.type === groupByIndex());
     if (!groupByData) return [];
     const gtabs = groupby(filtered(), groupByData.groupKey);
@@ -258,6 +265,14 @@ function App() {
     );
   };
 
+  const filterCount = () => {
+    return filtered().length;
+  }
+
+  const groupCount = () => {
+    return [groupedTabs().length, groupedTabs().reduce((acc, [_, tabs]) => acc + tabs.length, 0)] as const;
+  }
+
   const closeFiltered = () => {
     const filteredTabs = filtered();
     if (!filteredTabs || filteredTabs.length === 0) return;
@@ -271,43 +286,55 @@ function App() {
     <>
       <div class="flow popup">
         <header>
-          <div>{tabsData()?.length} Tabs</div>
-          <h1 class="title">Historia</h1>
+          <div class="row">
+            <div>
+              {numStr(tabsData()?.length ?? 0, "Tab", "Tabs")}
+            </div>
+            <Show when={filter() || groupByIndex()}>
+              <Show when={filter()}>
+                <div>
+                  {numStr(filterCount(), "Filtered Tab", "Filtered Tabs")}
+                </div>
+              </Show>
+              <Show when={groupByIndex()}>
+                <div>
+                  {numStr(groupCount()[0], "Group", "Groups")}
+                  ({numStr(groupCount()[1], "Tab", "Tabs")})
+                </div>
+              </Show>
+            </Show>
+            <Show when={!(filter() || groupByIndex())}>
+              <h1 class="title">Browserquery</h1>
+            </Show>
+          </div>
           <button onClick={refetch}>Refresh</button>
         </header>
-        <div class="actionrow">
-          <input
-            type="text"
-            placeholder="Search"
-            onInput={(e) => setFilter(e.currentTarget.value)}
-          />
+        <div class="flow sticky-controls">
+          <div class="actionrow">
+            <input
+              type="text"
+              placeholder="Filter by title or URL"
+              onInput={(e) => setFilter(e.currentTarget.value)}
+            />
 
-          <select
-            onChange={(e) => {
-              if (e.currentTarget.value === "")
-                return setGroupByIndex(undefined);
-
-              if (
-                !groupBy.find(
-                  (group) =>
-                    group.type === (e.currentTarget.value as GroupByType),
-                )
-              )
-                return;
-              setGroupByIndex(e.currentTarget.value as GroupByType);
-            }}
-          >
-            <option value="">None</option>
-            <For each={groupBy}>
-              {(group) => <option value={group.type}>{group.type}</option>}
-            </For>
-          </select>
-          <Show when={filter()}>
-            <button onClick={() => setFilter("")}>Clear</button>
-            <button onClick={closeFiltered}>Close All filtrered </button>
-          </Show>
+            <button onClick={() => setShowSelect(s => !s)}>
+              {groupByIndex() === undefined ? "Group By" : groupByIndex()}
+            </button>
+            {/* <option value="">None</option> */}
+            {/*   {(group) => <option value={group.type}>{group.type}</option>} */}
+            <Show when={filter()}>
+              <button onClick={closeFiltered}>Close filtrered</button>
+            </Show>
+          </div>
+          <div class="row">
+            <Show when={showSelect()}>
+              <For each={groupBy}>
+                {(g) => (<button onClick={() => { setGroupByIndex(g.type); }}>{g.type}</button>)}
+              </For>
+            </Show>
+          </div>
         </div>
-        <div>
+        <div class="results">
           <Show when={!groupByIndex()}>
             <For each={filtered()}>
               {(tab) => <TabRow tab={tab} refetch={refetch} />}
@@ -315,12 +342,16 @@ function App() {
           </Show>
           <Show when={groupByIndex()}>
             <GroupedTabs
+              groupType={groupByIndex()!}
               grouped={groupedTabs()}
               refetch={refetch}
-              bypassConfirmClose
+              bypassConfirmClose={groupByIndex() === "duplicate"}
             />
           </Show>
         </div>
+        <footer>
+          With {`<`}3 from <a href="https://www.xypnox.com/" target="_blank" rel="noreferrer">xypnox</a>
+        </footer>
       </div>
     </>
   );
