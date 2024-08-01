@@ -1,0 +1,40 @@
+:root {
+  font-family: "Iosevka Term", monospace;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0f111a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 80ch;
+  margin: 0;
+}
+
+a {
+  font-weight: 500;
+  color: #ff5370;
+  text-decoration: inherit;
+}
+
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 1.25em 0 0.5em;
+}
+
+* {
+  box-sizing: border-box;
+}
