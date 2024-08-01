@@ -101,7 +101,7 @@ const TabRow = (props: { tab: Tabs.Tab, refetch: () => void }) => (
     <button onClick={() => sendMessage({ type: 'closeTabs', data: [props.tab.id] }).finally(props.refetch)}>X</button>
   </div>)
 
-const GroupedTabs = (props: { grouped: [string, Tabs.Tab[]][], refetch: () => void, expanded?: boolean }) => {
+const GroupedTabs = (props: { grouped: [string, Tabs.Tab[]][], refetch: () => void, showClose?: boolean }) => {
   const [expanded, setExpanded] = createSignal<Record<string, boolean>>(props.grouped.reduce((acc, [key]) => {
     acc[key] = false;
     return acc;
@@ -120,8 +120,12 @@ const GroupedTabs = (props: { grouped: [string, Tabs.Tab[]][], refetch: () => vo
       <div class="group">
         <div class="row">
           <div>{tabs.length}</div>
-          <h2>{key} and some very very very long txt here to test it all the way to infinity</h2>
+          <h2>{key}</h2>
           <button onClick={() => toggleExpanded(key)}>{expanded()[key] ? 'Collapse' : 'Expand'}</button>
+          <Show when={props.showClose}>
+            <button onClick={() => sendMessage({ type: 'closeTabs', data: tabs.map((tab) => tab.id) }).finally(props.refetch)}>x*</button>
+            <button onClick={() => sendMessage({ type: 'closeTabs', data: tabs.map((tab) => tab.id).slice(1) }).finally(props.refetch)}>x-1</button>
+          </Show>
         </div>
         <Show when={expanded()[key]}>
           <For each={tabs}>
@@ -172,7 +176,8 @@ function App() {
     <>
       <div class="flow popup">
         <header>
-          <h1 class="title">Tabs</h1>
+          <div>{tabsData()?.length} Tabs</div>
+          <h1 class="title">Historia</h1>
           <button onClick={refetch}>Refresh</button>
         </header>
         <div class="actionrow">
@@ -203,7 +208,7 @@ function App() {
             </For>
           </Show>
           <Show when={groupByIndex()}>
-            <GroupedTabs grouped={groupedTabs()} refetch={refetch} />
+            <GroupedTabs grouped={groupedTabs()} refetch={refetch} showClose={groupByIndex() === 'duplicate'} />
           </Show>
         </div>
       </div>
