@@ -192,15 +192,14 @@ const GroupedTabs = (props: {
   refetch: () => void;
   bypassConfirmClose?: boolean;
 }) => {
-  const [expanded, setExpanded] = makePersisted(createSignal<Record<string, boolean>>(
+  const [expanded, setExpanded] = createSignal<Record<string, boolean>>(
     props.grouped.reduce(
       (acc, [key]) => {
         acc[key] = false;
         return acc;
       },
       {} as Record<string, boolean>,
-    ),
-  ), { name: `bq-expanded-${props.groupType}` });
+    ));
 
   const toggleExpanded = (key: string) => {
     const expandedValue = { ...expanded() };
