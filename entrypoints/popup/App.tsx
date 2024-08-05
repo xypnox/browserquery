@@ -5,7 +5,7 @@ import { Tabs } from "wxt/browser";
 import { sendMessage } from "./messaging";
 import groupby from "lodash.groupby";
 
-import PhSealQuestionDuotone from '~icons/ph/seal-question-duotone';
+import PhGlobeSimpleDuotone from '~icons/ph/globe-simple-duotone';
 import PhArrowClockwise from '~icons/ph/arrow-clockwise';
 import PhX from '~icons/ph/x';
 import PhSubsetOf from '~icons/ph/subset-of';
@@ -157,10 +157,12 @@ const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
       }
       class="tabdetails">
       <Show when={props.tab.favIconUrl}>
-        <img src={props.tab.favIconUrl} alt="favicon" class="favicon" />
+        <img src={props.tab.favIconUrl} alt="f" class="favicon" />
       </Show>
       <Show when={!props.tab.favIconUrl}>
-        <div class="favicon">O</div>
+        <div class="favicon">
+          <PhGlobeSimpleDuotone width="1em" height="1em" />
+        </div>
       </Show>
       <div class="tabText">
         {props.tab.title}
