@@ -3,13 +3,26 @@ import { Tabs } from "wxt/browser";
 
 const getAllTabs = async () => {
   const tabs = await browser.tabs.query({});
-  return tabs.filter((tab) => tab.url && tab.url.startsWith("http"));
+  return tabs.filter(
+    (tab) => (tab.url && tab.url.startsWith("http")) || tab.discarded,
+  );
+};
+
+const openTab = async (id: number) => {
+  return await browser.tabs.update(id, { active: true });
 };
 
 type BackgroundResponse = ResponseType<Tabs.Tab[]> | ResponseType<boolean>;
 
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
+
+  browser.commands.onCommand.addListener((command) => {
+    if (command === "open-popup") {
+      console.log("Open popup command received");
+      browser.browserAction.openPopup();
+    }
+  });
 
   browser.runtime.onMessage.addListener(
     (message, sender, sendRes: (res: BackgroundResponse) => void) => {
@@ -35,6 +48,22 @@ export default defineBackground(() => {
         return true;
       }
 
+      if (type === "openTab") {
+        console.log("Open tab");
+        const tabid = message?.data;
+        if (!tabid || typeof tabid !== "number") {
+          console.error("No tab id provided");
+          return;
+        }
+        openTab(tabid).then(() => {
+          sendRes({
+            type: "success",
+            data: true,
+          });
+        });
+
+        return true;
+      }
       if (type === "closeTabs") {
         console.log("Closing tabs");
         const tabs = message?.data;

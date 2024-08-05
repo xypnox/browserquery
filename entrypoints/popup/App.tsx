@@ -1,9 +1,16 @@
-import { createSignal } from "solid-js";
+import { createSignal, createRenderEffect } from "solid-js";
 import { ResponseType } from "@/src/types";
 import "./App.css";
 import { Tabs } from "wxt/browser";
 import { sendMessage } from "./messaging";
 import groupby from "lodash.groupby";
+
+import PhArrowClockwise from '~icons/ph/arrow-clockwise';
+import PhX from '~icons/ph/x';
+import PhSubsetOf from '~icons/ph/subset-of';
+import { capitalize } from "@/src/lib/text";
+
+import PhMagnifyingGlass from '~icons/ph/magnifying-glass';
 
 const numStr = (num: number, singular: string, plural: string) =>
   `${num} ${num === 1 ? singular : plural}`;
@@ -136,24 +143,31 @@ const ConfirmDelete = (props: {
 
 const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
   <div class="tabrow">
-    <div class="tabdetails">
+    <button
+      onClick={() =>
+        sendMessage({ type: "openTab", data: props.tab.id })
+      }
+      class="tabdetails">
       <Show when={props.tab.favIconUrl}>
         <img src={props.tab.favIconUrl} alt="favicon" class="favicon" />
       </Show>
       <Show when={!props.tab.favIconUrl}>
         <div class="favicon">O</div>
       </Show>
-      <p>{props.tab.title}</p>
-    </div>
+      <div class="tabText">
+        {props.tab.title}
+      </div>
+    </button>
     <button
       class="close"
+      title="Close Tab"
       onClick={() =>
         sendMessage({ type: "closeTabs", data: [props.tab.id] }).finally(
           props.refetch,
         )
       }
     >
-      X
+      <PhX />
     </button>
   </div>
 );
@@ -220,11 +234,13 @@ const GroupedTabs = (props: {
               />
             </Show>
           </div>
-          <Show when={expanded()[key]}>
-            <For each={tabs}>
-              {(tab) => <TabRow tab={tab} refetch={props.refetch} />}
-            </For>
-          </Show>
+          <div class="list">
+            <Show when={expanded()[key]}>
+              <For each={tabs}>
+                {(tab) => <TabRow tab={tab} refetch={props.refetch} />}
+              </For>
+            </Show>
+          </div>
         </div>
       )}
     </For>
@@ -237,6 +253,8 @@ function App() {
 
   const [filter, setFilter] = createSignal<string>("");
   const [showSelect, setShowSelect] = createSignal(false);
+
+  let filterInputRef: HTMLInputElement;
 
   const [groupByIndex, setGroupByIndex] = createSignal<GroupByType | undefined>(
     undefined,
@@ -282,6 +300,14 @@ function App() {
     }).finally(refetch);
   };
 
+  createEffect(() => {
+    // console.log('Filter:', filterInputRef);
+    if (filterInputRef)
+      setTimeout(() => {
+        { filterInputRef!.focus() };
+      }, 0)
+  });
+
   return (
     <>
       <div class="flow popup">
@@ -290,6 +316,7 @@ function App() {
             <div>
               {numStr(tabsData()?.length ?? 0, "Tab", "Tabs")}
             </div>
+            {numStr(tabsData()?.filter(tab => tab.discarded).length ?? 0, "Discarded Tab", "Discarded Tabs")}
             <Show when={filter() || groupByIndex()}>
               <Show when={filter()}>
                 <div>
@@ -307,21 +334,27 @@ function App() {
               <h1 class="title">Browserquery</h1>
             </Show>
           </div>
-          <button onClick={refetch}>Refresh</button>
+          <button
+            class="iconButton"
+            title="Refresh"
+            onClick={refetch}>
+            <PhArrowClockwise />
+          </button>
         </header>
         <div class="flow sticky-controls">
           <div class="actionrow">
             <input
+              ref={filterInputRef!}
               type="text"
               placeholder="Filter by title or URL"
               onInput={(e) => setFilter(e.currentTarget.value)}
             />
 
             <button onClick={() => setShowSelect(s => !s)}>
-              {groupByIndex() === undefined ? "Group By" : groupByIndex()}
+              <PhSubsetOf />
+              {groupByIndex() === undefined ? "Group By" : capitalize(groupByIndex()!)}
             </button>
-            {/* <option value="">None</option> */}
-            {/*   {(group) => <option value={group.type}>{group.type}</option>} */}
+
             <Show when={filter()}>
               <button onClick={closeFiltered}>Close filtrered</button>
             </Show>
@@ -331,14 +364,25 @@ function App() {
               <For each={groupBy}>
                 {(g) => (<button onClick={() => { setGroupByIndex(g.type); }}>{g.type}</button>)}
               </For>
+              <button
+                title="Clear Group By"
+                class="iconButton"
+                onClick={() => {
+                  setGroupByIndex(undefined);
+                  setShowSelect(false);
+                }}>
+                <PhX />
+              </button>
             </Show>
           </div>
         </div>
         <div class="results">
           <Show when={!groupByIndex()}>
-            <For each={filtered()}>
-              {(tab) => <TabRow tab={tab} refetch={refetch} />}
-            </For>
+            <div class="list">
+              <For each={filtered()}>
+                {(tab) => <TabRow tab={tab} refetch={refetch} />}
+              </For>
+            </div>
           </Show>
           <Show when={groupByIndex()}>
             <GroupedTabs
@@ -350,6 +394,7 @@ function App() {
           </Show>
         </div>
         <footer>
+          v0.1.0 -
           With {`<`}3 from <a href="https://www.xypnox.com/" target="_blank" rel="noreferrer">xypnox</a>
         </footer>
       </div>

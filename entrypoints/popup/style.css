@@ -67,6 +67,9 @@
   --layout-content-main: 800px;
   --layout-nav-height: 3rem;
   --border-radius: 0.2rem;
+
+  --layout-gap-small: 2px;
+
   --font-family: Jost;
   --font-size-sm: clamp(0.8rem, 0.21vw + 0.75rem, 0.94rem);
   --font-size-base: clamp(1rem, 0.38vw + 0.9rem, 1.25rem);
@@ -77,8 +80,13 @@
   --font-size-xxxl: clamp(3.05rem, 3.4vw + 2.2rem, 5.26rem);
 }
 
+html {
+  width: 620px;
+  margin: 0;
+}
+
 body {
-  width: 80ch;
+  width: 620px;
   margin: 0;
   font-size: var(--font-size-base);
 }
@@ -109,6 +117,10 @@ h6 {
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+
   font-size: var(--font-size-sm);
   padding: 0.5em 1em;
   border: none;
