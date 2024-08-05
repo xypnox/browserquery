@@ -146,7 +146,7 @@ h1.title {
 
 .group h2 {
   flex-grow: 1;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-base);
   color: var(--primary-color);
   margin: 0;
 

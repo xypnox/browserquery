@@ -81,7 +81,7 @@ const groupBy: GroupByData[] = [
   {
     type: "active",
     groupKey: (tab: Tabs.Tab) => {
-      return tab.active ? "Active" : "Inactive";
+      return (tab.active || !tab.discarded) ? "Active" : "Inactive";
     },
   },
   {
@@ -323,10 +323,7 @@ function App() {
         <header>
           <div class="row">
             <img src="logo64.svg" alt="browserquery icon" class="logo-icon" />
-            <div>
-              {numStr(tabsData()?.length ?? 0, "Tab", "Tabs")}
-            </div>
-            {numStr(tabsData()?.filter(tab => tab.discarded).length ?? 0, "Discarded Tab", "Discarded Tabs")}
+            {/* {numStr(tabsData()?.filter(tab => tab.discarded).length ?? 0, "Discarded Tab", "Discarded Tabs")} */}
             <Show when={filter() || groupByIndex()}>
               <Show when={filter()}>
                 <div>
@@ -340,6 +337,9 @@ function App() {
                 </div>
               </Show>
             </Show>
+            <div>
+              {numStr(tabsData()?.length ?? 0, "T", "Ts")}
+            </div>
           </div>
           <button
             class="iconButton"
