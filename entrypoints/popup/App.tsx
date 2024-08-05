@@ -5,12 +5,17 @@ import { Tabs } from "wxt/browser";
 import { sendMessage } from "./messaging";
 import groupby from "lodash.groupby";
 
+import PhSealQuestionDuotone from '~icons/ph/seal-question-duotone';
 import PhArrowClockwise from '~icons/ph/arrow-clockwise';
 import PhX from '~icons/ph/x';
 import PhSubsetOf from '~icons/ph/subset-of';
+import PhCaretDown from '~icons/ph/caret-down';
+import PhCaretLeft from '~icons/ph/caret-left';
+
 import { capitalize } from "@/src/lib/text";
 
 import PhMagnifyingGlass from '~icons/ph/magnifying-glass';
+import { JSX } from "solid-js";
 
 const numStr = (num: number, singular: string, plural: string) =>
   `${num} ${num === 1 ? singular : plural}`;
@@ -105,7 +110,7 @@ const groupBy: GroupByData[] = [
 ];
 
 const ConfirmDelete = (props: {
-  label: string;
+  label: JSX.Element;
   title?: string;
   bypass?: boolean;
   onConfirm: () => void;
@@ -113,11 +118,14 @@ const ConfirmDelete = (props: {
   const [showConfirm, setShowConfirm] = createSignal(false);
 
   return (
-    <>
+    <div class="confirm-wrapper row"
+      classList={{ open: showConfirm() }}
+    >
       <button
         onClick={() => {
-          props.bypass ? props.onConfirm() : setShowConfirm(true);
+          if (props.bypass === true) { props.onConfirm() } else setShowConfirm(true);
         }}
+        disabled={showConfirm()}
         title={props.title}
         aria-label={props.title}
       >
@@ -132,12 +140,12 @@ const ConfirmDelete = (props: {
               setShowConfirm(false);
             }}
           >
-            Confirm
+            Yes
           </button>
-          <button onClick={() => setShowConfirm(false)}>Cancel</button>
+          <button onClick={() => setShowConfirm(false)}>No</button>
         </div>
       </Show>
-    </>
+    </div>
   );
 };
 
@@ -207,12 +215,12 @@ const GroupedTabs = (props: {
           <div class="row">
             <div>{tabs.length}</div>
             <h2>{key}</h2>
-            <button onClick={() => toggleExpanded(key)}>
-              {expanded()[key] ? "Collapse" : "Expand"}
+            <button class="iconButton" onClick={() => toggleExpanded(key)}>
+              {expanded()[key] ? <PhCaretDown /> : <PhCaretLeft />}
+              {/* {expanded()[key] ? "Collapse" : "Expand"} */}
             </button>
             <ConfirmDelete
-              bypass={props.bypassConfirmClose}
-              label="xn"
+              label={<><PhX />n</>}
               title="Close All"
               onConfirm={() =>
                 sendMessage({
@@ -223,7 +231,8 @@ const GroupedTabs = (props: {
             />
             <Show when={props.groupType === "duplicate"}>
               <ConfirmDelete
-                label="xn⁻¹"
+                bypass={props.bypassConfirmClose}
+                label={<><PhX />n⁻¹</>}
                 title="Close All but one"
                 onConfirm={() =>
                   sendMessage({
@@ -300,12 +309,10 @@ function App() {
     }).finally(refetch);
   };
 
-  createEffect(() => {
-    // console.log('Filter:', filterInputRef);
-    if (filterInputRef)
-      setTimeout(() => {
-        { filterInputRef!.focus() };
-      }, 0)
+  onMount(() => {
+    console.log('Focus:', filterInputRef);
+    if (filterInputRef) { filterInputRef!.focus() };
+
   });
 
   return (
@@ -313,6 +320,7 @@ function App() {
       <div class="flow popup">
         <header>
           <div class="row">
+            <img src="logo64.svg" alt="browserquery icon" class="logo-icon" />
             <div>
               {numStr(tabsData()?.length ?? 0, "Tab", "Tabs")}
             </div>
@@ -329,9 +337,6 @@ function App() {
                   ({numStr(groupCount()[1], "Tab", "Tabs")})
                 </div>
               </Show>
-            </Show>
-            <Show when={!(filter() || groupByIndex())}>
-              <h1 class="title">Browserquery</h1>
             </Show>
           </div>
           <button
@@ -355,15 +360,18 @@ function App() {
               {groupByIndex() === undefined ? "Group By" : capitalize(groupByIndex()!)}
             </button>
 
-            <Show when={filter()}>
-              <button onClick={closeFiltered}>Close filtrered</button>
+            <Show when={filter() && filterCount() > 0}>
+              <ConfirmDelete onConfirm={closeFiltered} label="Close Filtered" />
             </Show>
           </div>
           <div class="row">
             <Show when={showSelect()}>
               <For each={groupBy}>
-                {(g) => (<button onClick={() => { setGroupByIndex(g.type); }}>{g.type}</button>)}
+                {(g) => (<button
+                  classList={{ selected: groupByIndex() === g.type }}
+                  onClick={() => { setGroupByIndex(g.type); }}>{capitalize(g.type)}</button>)}
               </For>
+              <div class="grow-spacer"></div>
               <button
                 title="Clear Group By"
                 class="iconButton"

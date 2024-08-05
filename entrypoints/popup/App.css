@@ -21,11 +21,17 @@
   gap: 1rem;
 }
 
+header .logo-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
 .sticky-controls {
   position: sticky;
   top: 0;
   background-color: var(--background);
   padding: 1rem 1rem 0.5rem;
+  margin: 0;
 }
 
 .actionrow {
@@ -39,13 +45,13 @@
   flex-grow: 1;
 }
 
-.sticky-controls .row {
+.sticky-controls > .row {
   align-items: stretch;
   gap: var(--layout-gap-small);
 }
 
-.sticky-controls .row > .close {
-  justify-self: flex-end;
+.sticky-controls > .row > button {
+  border-radius: 2rem;
 }
 
 .results {
@@ -58,7 +64,7 @@
 
 .tabrow {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.5rem;
   width: 100%;
   max-width: 100%;
@@ -76,6 +82,14 @@
   flex-grow: 1;
   background-color: transparent;
   padding: 0;
+}
+
+.tabdetails:hover:hover {
+  background-color: transparent;
+}
+
+.tabrow:has(.close:hover) {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0), var(--surface));
 }
 
 .tabrow .tabText {
@@ -115,12 +129,13 @@ h1.title {
 
 .group .row {
   flex: 1;
-  gap: 1em;
+  gap: 0.25em;
   flex-wrap: nowrap;
 }
 
 .group > .row > div:first-child {
   color: var(--secondary-color);
+  margin: 0 0.25rem;
 }
 
 .results .list {
@@ -138,4 +153,26 @@ h1.title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.confirm-wrapper.row {
+  flex-grow: 0;
+  width: max-content;
+  max-width: 100%;
+}
+
+.confirm-wrapper.open {
+  box-shadow: 0 0 0 1px var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.confirm-prompt.row {
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  gap: 0.25em;
+}
+
+.grow-spacer {
+  flex-grow: 1;
 }
