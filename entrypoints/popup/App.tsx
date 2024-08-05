@@ -5,6 +5,7 @@ import { Tabs } from "wxt/browser";
 import { sendMessage } from "./messaging";
 import groupby from "lodash.groupby";
 
+import PhDotOutlineDuotone from '~icons/ph/dot-outline-duotone';
 import PhGlobeSimpleDuotone from '~icons/ph/globe-simple-duotone';
 import PhArrowClockwise from '~icons/ph/arrow-clockwise';
 import PhX from '~icons/ph/x';
@@ -326,19 +327,26 @@ function App() {
             {/* {numStr(tabsData()?.filter(tab => tab.discarded).length ?? 0, "Discarded Tab", "Discarded Tabs")} */}
             <Show when={filter() || groupByIndex()}>
               <Show when={filter()}>
-                <div>
-                  {numStr(filterCount(), "Filtered Tab", "Filtered Tabs")}
-                </div>
+                <>
+                  <div>
+                    {numStr(filterCount(), "Filtered Tab", "Filtered Tabs")}
+                  </div>
+                  <PhDotOutlineDuotone />
+                </>
               </Show>
               <Show when={groupByIndex()}>
-                <div>
-                  {numStr(groupCount()[0], "Group", "Groups")}
-                  ({numStr(groupCount()[1], "Tab", "Tabs")})
-                </div>
+                <>
+                  <div>
+                    {numStr(groupCount()[0], "Group", "Groups")}
+                    {' '}
+                    ({numStr(groupCount()[1], "Tab", "Tabs")})
+                  </div>
+                  <PhDotOutlineDuotone />
+                </>
               </Show>
             </Show>
             <div>
-              {numStr(tabsData()?.length ?? 0, "T", "Ts")}
+              {numStr(tabsData()?.length ?? 0, "Tab", "Tabs")}
             </div>
           </div>
           <button

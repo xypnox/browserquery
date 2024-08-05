@@ -147,7 +147,7 @@ h1.title {
 .group h2 {
   flex-grow: 1;
   font-size: var(--font-size-base);
-  color: var(--primary-color);
+  color: var(--heading);
   margin: 0;
 
   overflow: hidden;
