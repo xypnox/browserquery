@@ -2,7 +2,7 @@
   "name": "browserquery",
   "description": "Query your current browser state (experimental)",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",
@@ -15,6 +15,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@solid-primitives/storage": "^3.8.0",
     "lodash.groupby": "^4.6.0",
     "solid-js": "^1.8.19"
   },

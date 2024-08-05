@@ -5,6 +5,8 @@ import { Tabs } from "wxt/browser";
 import { sendMessage } from "./messaging";
 import groupby from "lodash.groupby";
 
+import { version } from '../../package.json';
+
 import PhDotOutlineDuotone from '~icons/ph/dot-outline-duotone';
 import PhGlobeSimpleDuotone from '~icons/ph/globe-simple-duotone';
 import PhArrowClockwise from '~icons/ph/arrow-clockwise';
@@ -17,6 +19,7 @@ import { capitalize } from "@/src/lib/text";
 
 import PhMagnifyingGlass from '~icons/ph/magnifying-glass';
 import { JSX } from "solid-js";
+import { makePersisted } from "@solid-primitives/storage";
 
 const numStr = (num: number, singular: string, plural: string) =>
   `${num} ${num === 1 ? singular : plural}`;
@@ -189,7 +192,7 @@ const GroupedTabs = (props: {
   refetch: () => void;
   bypassConfirmClose?: boolean;
 }) => {
-  const [expanded, setExpanded] = createSignal<Record<string, boolean>>(
+  const [expanded, setExpanded] = makePersisted(createSignal<Record<string, boolean>>(
     props.grouped.reduce(
       (acc, [key]) => {
         acc[key] = false;
@@ -197,7 +200,7 @@ const GroupedTabs = (props: {
       },
       {} as Record<string, boolean>,
     ),
-  );
+  ), { name: `bq-expanded-${props.groupType}` });
 
   const toggleExpanded = (key: string) => {
     const expandedValue = { ...expanded() };
@@ -259,18 +262,20 @@ const GroupedTabs = (props: {
   );
 };
 
+
+
 function App() {
   // const [tabsData, setTabsData] = createSignal<Tabs.Tab[]>([]);
   const [tabsData, { refetch }] = createResource(async () => tabsDataFecther());
 
-  const [filter, setFilter] = createSignal<string>("");
-  const [showSelect, setShowSelect] = createSignal(false);
+  const [filter, setFilter] = makePersisted(createSignal<string>(""), { name: 'bq-filter-text' });
+  const [showSelect, setShowSelect] = makePersisted(createSignal(false), { name: 'bq-show-select' });
 
   let filterInputRef: HTMLInputElement;
 
-  const [groupByIndex, setGroupByIndex] = createSignal<GroupByType | undefined>(
+  const [groupByIndex, setGroupByIndex] = makePersisted(createSignal<GroupByType | undefined>(
     undefined,
-  );
+  ), { name: 'bq-group-by' });
 
   const groupedTabs = () => {
     if (!groupByIndex()) return [];
@@ -362,6 +367,7 @@ function App() {
               ref={filterInputRef!}
               type="text"
               placeholder="Filter by title or URL"
+              value={filter()}
               onInput={(e) => setFilter(e.currentTarget.value)}
             />
 
@@ -412,7 +418,7 @@ function App() {
           </Show>
         </div>
         <footer>
-          v0.1.0 -
+          v{version} -
           With {`<`}3 from <a href="https://www.xypnox.com/" target="_blank" rel="noreferrer">xypnox</a>
         </footer>
       </div>
