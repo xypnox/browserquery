@@ -7,9 +7,12 @@ import groupby from "lodash.groupby";
 
 import { version } from '../../package.json';
 
+import PhArrowsOut from '~icons/ph/arrows-out';
 import PhDotOutlineDuotone from '~icons/ph/dot-outline-duotone';
 import PhGlobeSimpleDuotone from '~icons/ph/globe-simple-duotone';
 import PhArrowClockwise from '~icons/ph/arrow-clockwise';
+import PhCopy from '~icons/ph/copy';
+import PhFunnel from '~icons/ph/funnel';
 import PhX from '~icons/ph/x';
 import PhSubsetOf from '~icons/ph/subset-of';
 import PhCaretDown from '~icons/ph/caret-down';
@@ -20,6 +23,7 @@ import { capitalize } from "@/src/lib/text";
 import PhMagnifyingGlass from '~icons/ph/magnifying-glass';
 import { JSX } from "solid-js";
 import { makePersisted } from "@solid-primitives/storage";
+import { createShortcut, useCurrentlyHeldKey } from "@solid-primitives/keyboard";
 
 const numStr = (num: number, singular: string, plural: string) =>
   `${num} ${num === 1 ? singular : plural}`;
@@ -173,6 +177,7 @@ const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
       </div>
     </button>
     <button
+      tabIndex="-1"
       class="close"
       title="Close Tab"
       onClick={() =>
@@ -250,9 +255,10 @@ const GroupedTabs = (props: {
           </div>
           <div class="list">
             <Show when={expanded()[key]}>
-              <For each={tabs}>
-                {(tab) => <TabRow tab={tab} refetch={props.refetch} />}
-              </For>
+              <Index each={tabs}>
+                {(tab, i) => <TabRow tab={tab()}
+                  refetch={props.refetch} />}
+              </Index>
             </Show>
           </div>
         </div>
@@ -268,7 +274,9 @@ function App() {
   const [tabsData, { refetch }] = createResource(async () => tabsDataFecther());
 
   const [filter, setFilter] = makePersisted(createSignal<string>(""), { name: 'bq-filter-text' });
-  const [showSelect, setShowSelect] = makePersisted(createSignal(false), { name: 'bq-show-select' });
+  const [showSelect, setShowSelect] = createSignal(false);
+
+  const [lastFocused, setLastFocused] = createSignal<number | undefined>(undefined);
 
   let filterInputRef: HTMLInputElement;
 
@@ -316,11 +324,133 @@ function App() {
     }).finally(refetch);
   };
 
+  const openInNewTab = () => {
+    const url = window.location.href;
+    browser.tabs.create({ url });
+  }
+
+  createEffect(() => {
+    setTimeout(() => {
+      if (lastFocused()) {
+        // console.log('Focusing:', lastFocused());
+        const allTabs = Array.from(document.querySelectorAll('.tabrow .tabdetails')) as HTMLElement[];
+        if (allTabs.length > 0) {
+          allTabs[lastFocused()!].focus({
+          });
+        }
+        setLastFocused(undefined);
+        // console.log('Focused:', lastFocused());
+      }
+    }, 10);
+  }, [lastFocused]);
+
+  const shiftFocus = (dir: 'UP' | 'DOWN') => {
+    const currentlyFocusedElement = document.activeElement as HTMLElement;
+    if (!currentlyFocusedElement) return;
+    const allTabs = Array.from(document.querySelectorAll('.tabrow .tabdetails')) as HTMLElement[];
+    // Is the currently focused element a tab?
+    if (allTabs.length > 0 && currentlyFocusedElement.classList && currentlyFocusedElement.classList.contains('tabdetails')) {
+      const currentTabIndex = Array.from(allTabs).indexOf(currentlyFocusedElement);
+      if (dir === 'UP') {
+        if (currentTabIndex > 0) {
+          allTabs[currentTabIndex - 1].focus();
+        } else {
+          filterInputRef?.focus();
+        }
+      } else if (dir === 'DOWN') {
+        if (currentTabIndex < allTabs.length - 1) {
+          allTabs[currentTabIndex + 1].focus();
+        } else {
+          filterInputRef?.focus();
+        }
+      }
+    }
+
+    else if (currentlyFocusedElement.tagName === 'INPUT') {
+      const allTabs = Array.from(document.querySelectorAll('.tabrow .tabdetails')) as HTMLElement[];
+      if (dir === 'UP') {
+        if (allTabs.length > 0) {
+          allTabs[allTabs.length - 1].focus();
+        }
+      } else if (dir === 'DOWN') {
+        if (allTabs.length > 0) {
+          allTabs[0].focus();
+        }
+      }
+    }
+  }
+
+  const closeIfDelete = (e: KeyboardEvent) => {
+    const currentlyFocusedElement = document.activeElement as HTMLElement;
+    if (!currentlyFocusedElement) return;
+    if (e.key === 'Delete' && currentlyFocusedElement.classList && currentlyFocusedElement.classList.contains('tabdetails')) {
+      const button = currentlyFocusedElement.parentElement?.querySelector('.close') as HTMLButtonElement | null;
+      const index = Array.from(document.querySelectorAll('.tabrow .tabdetails')).indexOf(currentlyFocusedElement);
+      if (button) {
+        // console.log('Closing:', index);
+        setLastFocused(index);
+        button.click();
+        // console.log('Closed:', index);
+      }
+    }
+  }
+
   onMount(() => {
-    console.log('Focus:', filterInputRef);
+    // console.log('Focus:', filterInputRef);
     if (filterInputRef) { filterInputRef!.focus() };
 
+    createShortcut(['TAB'], (e) => {
+      if (e?.target && (e.target as any).tagName === 'INPUT') {
+        e.preventDefault();
+        shiftFocus('DOWN');
+      }
+    }, {
+      preventDefault: false,
+    });
+
+    createShortcut(['DELETE'], (e) => {
+      if (e) {
+        closeIfDelete(e)
+      };
+    })
+
+    createShortcut(['G'], (e) => {
+      if (e) {
+        if (e.target && (e.target as any).tagName === 'INPUT') {
+          return;
+        }
+        e.preventDefault();
+        setShowSelect(s => !s);
+        const groupByButton = document.querySelector('.groupByButton') as HTMLButtonElement | null;
+        if (groupByButton) {
+          groupByButton.focus();
+        }
+      }
+    }, {
+      preventDefault: false,
+    });
+
+    createShortcut(['ARROWUP'], (e) => {
+      // console.log('UP:', e);
+      if (e) {
+        shiftFocus('UP');
+      }
+    });
+    createShortcut(['ARROWDOWN'], (e) => {
+      // console.log('DOWN:', e);
+      if (e) {
+        shiftFocus('DOWN');
+      }
+    });
   });
+
+  const onCopyFiltered = () => {
+    const filteredTabs = filtered();
+    if (!filteredTabs || filteredTabs.length === 0) return;
+    // The text should be markdown unordered list of - [title](url)
+    const filteredText = filteredTabs.map(tab => `- [${tab.title ?? 'Title'}](${tab.url ?? 'url'})`).join('\n');
+    navigator.clipboard.writeText(filteredText);
+  }
 
   return (
     <>
@@ -353,15 +483,43 @@ function App() {
               {numStr(tabsData()?.length ?? 0, "Tab", "Tabs")}
             </div>
           </div>
-          <button
-            class="iconButton"
-            title="Refresh"
-            onClick={refetch}>
-            <PhArrowClockwise />
-          </button>
+          <div class="row">
+            <button
+              class="iconButton"
+              title="Fullscreen"
+              onClick={openInNewTab}>
+              <PhArrowsOut />
+            </button>
+            <button
+              class="iconButton"
+              title="Refresh"
+              onClick={refetch}>
+              <PhArrowClockwise />
+            </button>
+          </div>
         </header>
         <div class="flow sticky-controls">
           <div class="actionrow">
+            <button class="groupByButton" onClick={() => setShowSelect(s => !s)}>
+              <PhSubsetOf />
+              {groupByIndex() === undefined ? "Group By" : capitalize(groupByIndex()!)}
+            </button>
+
+            <Show when={filter() && filterCount() > 0}>
+              <ConfirmDelete onConfirm={closeFiltered} title="Close Filtered" label={
+                <>
+                  <PhX />
+                  <PhFunnel />
+                </>
+              } />
+              {/* Copy filtered tabs to clipboard */}
+              <button onClick={onCopyFiltered} title="Copy Filtered Tabs">
+                <PhCopy />
+              </button>
+
+            </Show>
+
+
             <input
               ref={filterInputRef!}
               type="text"
@@ -369,15 +527,6 @@ function App() {
               value={filter()}
               onInput={(e) => setFilter(e.currentTarget.value)}
             />
-
-            <button onClick={() => setShowSelect(s => !s)}>
-              <PhSubsetOf />
-              {groupByIndex() === undefined ? "Group By" : capitalize(groupByIndex()!)}
-            </button>
-
-            <Show when={filter() && filterCount() > 0}>
-              <ConfirmDelete onConfirm={closeFiltered} label="Close Filtered" />
-            </Show>
           </div>
           <div class="row">
             <Show when={showSelect()}>
@@ -402,9 +551,10 @@ function App() {
         <div class="results">
           <Show when={!groupByIndex()}>
             <div class="list">
-              <For each={filtered()}>
-                {(tab) => <TabRow tab={tab} refetch={refetch} />}
-              </For>
+              <Index each={filtered()}>
+                {(tab, i) => <TabRow
+                  tab={tab()} refetch={refetch} />}
+              </Index>
             </div>
           </Show>
           <Show when={groupByIndex()}>

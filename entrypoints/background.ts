@@ -26,7 +26,7 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener(
     (message, sender, sendRes: (res: BackgroundResponse) => void) => {
-      console.log("Received message:", message, "from:", sender);
+      console.log("Background Message:", message, "\n from:", sender);
 
       const type: string = message?.type;
 
@@ -36,9 +36,9 @@ export default defineBackground(() => {
       }
 
       if (type === "getTabs") {
-        console.log("Getting tabs");
+        // console.log("Getting tabs");
         getAllTabs().then((tabs) => {
-          console.log("Sending tabs:", tabs);
+          // console.log("Sending tabs:", tabs);
           sendRes({
             type: "tabs",
             data: tabs,
@@ -49,7 +49,7 @@ export default defineBackground(() => {
       }
 
       if (type === "openTab") {
-        console.log("Open tab");
+        // console.log("Open tab");
         const tabid = message?.data;
         if (!tabid || typeof tabid !== "number") {
           console.error("No tab id provided");
@@ -65,7 +65,7 @@ export default defineBackground(() => {
         return true;
       }
       if (type === "closeTabs") {
-        console.log("Closing tabs");
+        // console.log("Closing tabs");
         const tabs = message?.data;
         if (!tabs || !Array.isArray(tabs)) {
           console.error("No tabs provided");
@@ -73,7 +73,7 @@ export default defineBackground(() => {
         }
 
         if (tabs.length === 0) {
-          console.log("No tabs to close");
+          // console.log("No tabs to close");
           return;
         }
 
@@ -91,7 +91,7 @@ export default defineBackground(() => {
           }),
         )
           .then(() => {
-            console.log("Tabs closed");
+            // console.log("Tabs closed");
             sendRes({
               type: "closed_tabs",
               data: true,
@@ -109,7 +109,7 @@ export default defineBackground(() => {
         return true;
       }
 
-      console.log("Unknown message type:", type);
+      console.warn("Unknown message type:", type);
     },
   );
 });

@@ -15,6 +15,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@solid-primitives/keyboard": "^1.2.8",
     "@solid-primitives/storage": "^3.8.0",
     "lodash.groupby": "^4.6.0",
     "solid-js": "^1.8.19"

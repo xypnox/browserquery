@@ -36,6 +36,7 @@ header .logo-icon {
 
 .actionrow {
   display: flex;
+  flex-direction: row-reverse;
   justify-content: space-between;
   gap: var(--layout-gap-small);
   width: 100%;
