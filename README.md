@@ -1,6 +1,13 @@
 # Browserquery
 
+![Screenshot of browserquery with tabs grouped by domain](./screens/screen-group.png)
+![Screenshot of browserquery with tabs filtered by text solidjs](./screens/screen-filter.png)
+
 Query your current browser tabs.
+
+[Get this Extension for 🦊 Firefox](https://addons.mozilla.org/en-US/firefox/addon/browserquery/)
+
+---
 
 It filters tabs from direct string match with url or title of the tab.
 
@@ -32,6 +39,8 @@ Doesn't ask when closing all but one for duplicate tabs.
 By design, it only queries for tabs that start with http, so tabs from extensions will not show up.
 
 > Iosevka Term font recommended but not required
+
+---
 
 ## Build Steps
 
