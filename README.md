@@ -6,17 +6,28 @@ It filters tabs from direct string match with url or title of the tab.
 
 It groups by:   
 
-- "domain",
-- "window",
+- "domain",  // Domain of the url
+- "window", // Window ID
 - "active", // Whether the window has not been discarded
-- "time",
+- "time", // Currently in months
 - "audio", // If there is any audio playing
 - "article", // Whether it can be rendered in the firefox reader mode (isn't reliable tbh)
-- "pinned",
+- "pinned", // Whether the tab is pinned
 - "duplicate", // Ability to close all duplicate and also all duplicate but one.
 
 It asks for confirmation when closing tabs in bulk.
-Doesn't ask when closing all but one for duplicate tabs
+Doesn't ask when closing all but one for duplicate tabs.
+
+## Shortcuts
+
+| Shortcut | Description |
+| ---      | ---         |
+| `Alt + Shift + Space`           | Open the popup |
+| `Command + Alt + Shift + Space` | ... (Mac) |
+| | |
+| **When input is not focused**     | |
+| `G`                             | Focus on the Group input |
+| `X` or `Delete`                   | Close currently focused tab |
 
 By design, it only queries for tabs that start with http, so tabs from extensions will not show up.
 

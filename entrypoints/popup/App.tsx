@@ -1,4 +1,4 @@
-import { createSignal, createRenderEffect } from "solid-js";
+import { createSignal } from "solid-js";
 import { ResponseType } from "@/src/types";
 import "./App.css";
 import { Tabs } from "wxt/browser";
@@ -20,10 +20,9 @@ import PhCaretLeft from '~icons/ph/caret-left';
 
 import { capitalize } from "@/src/lib/text";
 
-import PhMagnifyingGlass from '~icons/ph/magnifying-glass';
 import { JSX } from "solid-js";
 import { makePersisted } from "@solid-primitives/storage";
-import { createShortcut, useCurrentlyHeldKey } from "@solid-primitives/keyboard";
+import { createShortcut } from "@solid-primitives/keyboard";
 
 const numStr = (num: number, singular: string, plural: string) =>
   `${num} ${num === 1 ? singular : plural}`;
@@ -191,7 +190,13 @@ const TabRow = (props: { tab: Tabs.Tab; refetch: () => void }) => (
   </div>
 );
 
+const sliceTabs = <T,>(sliced: boolean, arr: T[], limit: number): T[] => {
+  if (!sliced) return arr;
+  return arr.slice(0, limit);
+}
+
 const GroupedTabs = (props: {
+  sliced: boolean;
   groupType: GroupByType;
   grouped: [string, Tabs.Tab[]][];
   refetch: () => void;
@@ -255,7 +260,7 @@ const GroupedTabs = (props: {
           </div>
           <div class="list">
             <Show when={expanded()[key]}>
-              <Index each={tabs}>
+              <Index each={sliceTabs(props.sliced, tabs, 20)}>
                 {(tab, i) => <TabRow tab={tab()}
                   refetch={props.refetch} />}
               </Index>
@@ -283,6 +288,8 @@ function App() {
   const [groupByIndex, setGroupByIndex] = makePersisted(createSignal<GroupByType | undefined>(
     undefined,
   ), { name: 'bq-group-by' });
+
+  const [sliced, setSliced] = createSignal(false);
 
   const groupedTabs = () => {
     if (!groupByIndex()) return [];
@@ -380,10 +387,10 @@ function App() {
     }
   }
 
-  const closeIfDelete = (e: KeyboardEvent) => {
+  const closeTab = () => {
     const currentlyFocusedElement = document.activeElement as HTMLElement;
     if (!currentlyFocusedElement) return;
-    if (e.key === 'Delete' && currentlyFocusedElement.classList && currentlyFocusedElement.classList.contains('tabdetails')) {
+    if (currentlyFocusedElement.classList && currentlyFocusedElement.classList.contains('tabdetails')) {
       const button = currentlyFocusedElement.parentElement?.querySelector('.close') as HTMLButtonElement | null;
       const index = Array.from(document.querySelectorAll('.tabrow .tabdetails')).indexOf(currentlyFocusedElement);
       if (button) {
@@ -401,8 +408,11 @@ function App() {
 
     createShortcut(['TAB'], (e) => {
       if (e?.target && (e.target as any).tagName === 'INPUT') {
-        e.preventDefault();
-        shiftFocus('DOWN');
+        const allTabs = Array.from(document.querySelectorAll('.tabrow .tabdetails')) as HTMLElement[];
+        if (allTabs.length > 0) {
+          e.preventDefault();
+          shiftFocus('DOWN');
+        }
       }
     }, {
       preventDefault: false,
@@ -410,9 +420,21 @@ function App() {
 
     createShortcut(['DELETE'], (e) => {
       if (e) {
-        closeIfDelete(e)
+        closeTab()
       };
     })
+
+    createShortcut(['X'], (e) => {
+      if (e) {
+        if (e.target && (e.target as any).tagName === 'INPUT') {
+          return;
+        }
+        e.preventDefault();
+        closeTab()
+      }
+    }, {
+      preventDefault: false,
+    });
 
     createShortcut(['G'], (e) => {
       if (e) {
@@ -500,10 +522,15 @@ function App() {
         </header>
         <div class="flow sticky-controls">
           <div class="actionrow">
-            <button class="groupByButton" onClick={() => setShowSelect(s => !s)}>
-              <PhSubsetOf />
-              {groupByIndex() === undefined ? "Group By" : capitalize(groupByIndex()!)}
-            </button>
+            <input
+              ref={filterInputRef!}
+              type="text"
+              placeholder="Filter by title or URL"
+              value={filter()}
+              onInput={(e) => setFilter(e.currentTarget.value)}
+              onFocusIn={() => setSliced(true)}
+              onFocusOut={() => setSliced(false)}
+            />
 
             <Show when={filter() && filterCount() > 0}>
               <ConfirmDelete onConfirm={closeFiltered} title="Close Filtered" label={
@@ -516,17 +543,12 @@ function App() {
               <button onClick={onCopyFiltered} title="Copy Filtered Tabs">
                 <PhCopy />
               </button>
-
             </Show>
 
-
-            <input
-              ref={filterInputRef!}
-              type="text"
-              placeholder="Filter by title or URL"
-              value={filter()}
-              onInput={(e) => setFilter(e.currentTarget.value)}
-            />
+            <button class="groupByButton" onClick={() => setShowSelect(s => !s)}>
+              <PhSubsetOf />
+              {groupByIndex() === undefined ? "Group By" : capitalize(groupByIndex()!)}
+            </button>
           </div>
           <div class="row">
             <Show when={showSelect()}>
@@ -551,7 +573,7 @@ function App() {
         <div class="results">
           <Show when={!groupByIndex()}>
             <div class="list">
-              <Index each={filtered()}>
+              <Index each={sliceTabs(sliced(), filtered(), 20)}>
                 {(tab, i) => <TabRow
                   tab={tab()} refetch={refetch} />}
               </Index>
@@ -559,6 +581,7 @@ function App() {
           </Show>
           <Show when={groupByIndex()}>
             <GroupedTabs
+              sliced={sliced()}
               groupType={groupByIndex()!}
               grouped={groupedTabs()}
               refetch={refetch}

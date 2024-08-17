@@ -36,7 +36,7 @@ header .logo-icon {
 
 .actionrow {
   display: flex;
-  flex-direction: row-reverse;
+  /* flex-direction: row-reverse; */
   justify-content: space-between;
   gap: var(--layout-gap-small);
   width: 100%;
@@ -79,8 +79,9 @@ header .logo-icon {
 .tabrow .tabdetails {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  max-width: calc(100% - 3em);
   flex-grow: 1;
+  gap: 0.5rem;
   background-color: transparent;
   padding: 0;
 }
@@ -96,8 +97,7 @@ header .logo-icon {
 .tabrow .tabText {
   flex-grow: 1;
   margin: 0;
-  width: 100%;
-  max-width: 60ch;
+  max-width: calc(100% - 2.5em);
   /* Overflow of text should be hidden */
   overflow: hidden;
   text-overflow: ellipsis;

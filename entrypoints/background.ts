@@ -26,12 +26,12 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener(
     (message, sender, sendRes: (res: BackgroundResponse) => void) => {
-      console.log("Background Message:", message, "\n from:", sender);
+      // console.log("Background Message:", message, "\n from:", sender);
 
       const type: string = message?.type;
 
       if (!type || typeof type !== "string") {
-        console.error("No message type provided");
+        console.error("No message type provided", { message });
         return;
       }
 
@@ -52,7 +52,7 @@ export default defineBackground(() => {
         // console.log("Open tab");
         const tabid = message?.data;
         if (!tabid || typeof tabid !== "number") {
-          console.error("No tab id provided");
+          console.error("No tab id provided", { message });
           return;
         }
         openTab(tabid).then(() => {
@@ -68,7 +68,7 @@ export default defineBackground(() => {
         // console.log("Closing tabs");
         const tabs = message?.data;
         if (!tabs || !Array.isArray(tabs)) {
-          console.error("No tabs provided");
+          console.error("No tabs provided", { message });
           return;
         }
 
@@ -81,7 +81,7 @@ export default defineBackground(() => {
           tabs.length > 0 &&
           tabs.some((tabid) => typeof tabid !== "number")
         ) {
-          console.error("Invalid tab ids provided");
+          console.error("Invalid tab ids provided", { message });
           return;
         }
 
@@ -98,7 +98,7 @@ export default defineBackground(() => {
             });
           })
           .catch((err) => {
-            console.error("Error closing tabs:", err);
+            console.error("Error closing tabs:", err, { message });
             sendRes({
               type: "closed_tabs",
               data: false,
@@ -109,7 +109,7 @@ export default defineBackground(() => {
         return true;
       }
 
-      console.warn("Unknown message type:", type);
+      console.warn("Unknown message type:", type, { message });
     },
   );
 });

@@ -12,7 +12,6 @@ export default defineConfig({
       "open-popup": {
         suggested_key: {
           default: "Alt+Shift+Space",
-          mac: "Command+Shift+Space",
         },
         description: "Open the popup window",
       },
